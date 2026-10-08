@@ -21,10 +21,23 @@ table{width:100%;border-collapse:collapse;font-size:11px}th,td{text-align:left;b
 .goal{display:grid;grid-template-columns:1fr 100px 55px;gap:7px;align-items:center;padding:7px 0}.goal input{border:1px solid #ddd;padding:8px;width:100%}
 footer{margin-top:25px;font-size:10px;color:#777}
 @media(max-width:850px){.cards{grid-template-columns:1fr 1fr}.grid2,.grid3,.settings{grid-template-columns:1fr}}@media(max-width:550px){.cards{grid-template-columns:1fr}.title{font-size:42px}.form{grid-template-columns:1fr}.nutrow{grid-template-columns:90px 1fr 85px}}
+
+#authScreen{position:fixed;inset:0;background:#f4f2ed;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}.authbox{width:min(430px,100%);background:#fffdf8;border:1px solid #ded9cf;border-radius:18px;padding:28px}.authbox h1{font-size:38px;letter-spacing:-.06em;margin:0 0 8px}.authbox p{font-size:12px;color:#777;line-height:1.5}.authbox input{width:100%;padding:12px;border:1px solid #d8d3ca;border-radius:9px;margin:5px 0;background:#fff}.authactions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.authmsg{font-size:11px;color:#777;margin-top:10px;min-height:16px}.userbar{display:flex;gap:7px;align-items:center}.userbar button{border:1px solid #d8d3ca;background:#fffdf8;border-radius:9px;padding:8px 10px;font-size:11px}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.calhead{font-size:10px;color:#777;text-align:center;padding:5px}.calday{min-height:70px;border:1px solid #ded9cf;background:#fffdf8;border-radius:9px;padding:7px;cursor:pointer}.calday:hover{border-color:#777}.calday.empty{visibility:hidden}.calday .num{font-weight:bold;font-size:12px}.calday .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-top:9px}.calday.green{border-color:#6b8f6b}.calday.green .dot{background:#4e8b4e}.calday.yellow{border-color:#b89b45}.calday.yellow .dot{background:#c6a335}.calday.red{border-color:#a56b6b}.calday.red .dot{background:#b43d3d}.historyBox{margin-top:14px;border-top:1px solid #ded9cf;padding-top:14px}.historygrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.historyitem{border:1px solid #ded9cf;border-radius:9px;padding:10px;background:#fff}.historyitem b{font-size:12px}.historyitem span{display:block;font-size:10px;color:#777;margin-top:4px}.logout{margin-left:auto}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body><div class="app">
-<header><div><div class="eyebrow">PERSONAL LIFESTYLE OS</div><div class="title" id="title">My Life.</div></div><div class="date" id="date"></div></header>
+<body>
+<div id="authScreen"><div class="authbox">
+<div class="eyebrow">MY LIFE OS</div><h1>Your life. Synced.</h1>
+<p>Create an account once, then use the same dashboard on your laptop, phone, tablet or any other device.</p>
+<input id="authEmail" type="email" placeholder="Email">
+<input id="authPassword" type="password" placeholder="Password (6+ characters)">
+<div class="authactions"><button class="btn dark" onclick="authSignIn()">Log in</button><button class="btn" onclick="authSignUp()">Sign up</button></div>
+<div class="authmsg" id="authMsg"></div>
+<div class="notice" style="margin-top:12px">Cloud sync uses Supabase. Your account data is protected by database Row Level Security. The setup file provided with this site creates user-only access policies.</div>
+</div></div>
+<div class="app">
+<header><div><div class="eyebrow">PERSONAL LIFESTYLE OS</div><div class="title" id="title">My Life.</div></div><div class="userbar"><span class="date" id="date"></span><button onclick="authSignOut()">Log out</button></div></header>
 <nav id="nav"></nav>
 
 <section id="dashboard" class="view active">
@@ -66,7 +79,10 @@ footer{margin-top:25px;font-size:10px;color:#777}
 <div class="panel"><h2>Backup</h2><button class="btn" onclick="exportData()">Export</button><button class="btn" onclick="document.getElementById('import').click()">Import</button><input id="import" type="file" accept=".json" hidden onchange="importData(event)"></div>
 <div class="panel"><h2>Reset</h2><button class="btn" onclick="resetAll()">Reset to baseline</button></div></section>
 
-<footer>Local browser storage. No account or server is required for this version.</footer>
+
+<section class="panel" style="margin-top:12px"><div class="split"><h2>📅 History</h2><div><button class="btn" onclick="changeMonth(-1)">←</button> <span id="monthLabel" class="muted"></span> <button class="btn" onclick="changeMonth(1)">→</button></div></div>
+<div class="calendar" id="calendar"></div><div class="historyBox" id="historyBox"><div class="muted">Click a date to inspect that day's data.</div></div></section>
+<footer>Cloud-synced data.  No account or server is required for this version.</footer>
 </div>
 
 <script>
@@ -116,5 +132,76 @@ function exportData(){let a=document.createElement("a");a.href=URL.createObjectU
 function importData(e){let r=new FileReader();r.onload=()=>{try{d=JSON.parse(r.result);save()}catch{alert("Invalid backup file.")}};r.readAsText(e.target.files[0])}
 function resetAll(){if(confirm("Reset everything to baseline?")){localStorage.removeItem(KEY);location.reload()}}
 function render(){document.getElementById("date").textContent=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});nav();document.getElementById("scheduleList").innerHTML=taskHTML([...d.tasks]);renderDashboard();renderNutrition();renderSupp();renderGoals();renderSettings();suggestions.innerHTML=["2 eggs","100 g oats","250 ml milk","2 scoops whey","1 banana"].map(x=>`<button onclick="foodName.value='${x.replace(/[0-9 ]/g,'').trim()}'">${x}</button>`).join("")}
-render();
+
+/* ---------- CLOUD AUTH + MULTI-DEVICE HISTORY ---------- */
+const SUPABASE_URL = "https://auazpcpkkrnozegzjcus.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_1u0LYf_a1lE9P_L3H9zFBg_FKNoczHl";
+let cloud = null, currentUser = null, selectedHistoryDate = null, calendarMonth = new Date();
+const cloudReady = SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_");
+if(cloudReady) cloud = window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+function setAuthMessage(msg){document.getElementById('authMsg').textContent=msg||''}
+async function authSignUp(){
+ if(!cloudReady){setAuthMessage('Add your Supabase URL and publishable key to index.html first.');return}
+ const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;
+ if(!email||password.length<6){setAuthMessage('Enter an email and a password with at least 6 characters.');return}
+ setAuthMessage('Creating account...'); const {error}=await cloud.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});
+ setAuthMessage(error?error.message:'Account created. Check your email if confirmation is enabled.');
+}
+async function authSignIn(){
+ if(!cloudReady){setAuthMessage('Add your Supabase URL and publishable key to index.html first.');return}
+ const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;
+ setAuthMessage('Logging in...'); const {error}=await cloud.auth.signInWithPassword({email,password}); if(error)setAuthMessage(error.message);
+}
+async function authSignOut(){if(cloud) await cloud.auth.signOut()}
+function localSnapshot(){return {tasks:d.tasks,supp:d.supp,foodLog:d.foodLog.filter(x=>x.date===day()),water:d.water,steps:d.steps}}
+async function cloudSave(){
+ if(!cloud||!currentUser)return;
+ const state={...d,foodLog:[],tasks:d.tasks.map(x=>({...x,done:false})),supp:d.supp.map(x=>({...x,done:false}))};
+ delete state.history;
+ await cloud.from('user_settings').upsert({user_id:currentUser.id,state,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+ const score=calculateScore();
+ await cloud.from('daily_logs').upsert({user_id:currentUser.id,log_date:day(),snapshot:localSnapshot(),score,updated_at:new Date().toISOString()},{onConflict:'user_id,log_date'});
+}
+async function cloudLoad(){
+ if(!cloud||!currentUser)return;
+ const {data:settings,error:e1}=await cloud.from('user_settings').select('state').eq('user_id',currentUser.id).maybeSingle();
+ if(e1){console.error(e1);setAuthMessage(e1.message);return}
+ if(settings?.state){d={...d,...settings.state};}
+ else {await cloud.from('user_settings').upsert({user_id:currentUser.id,state:d},{onConflict:'user_id'});}
+ const today=day(); const {data:log,error:e2}=await cloud.from('daily_logs').select('snapshot').eq('user_id',currentUser.id).eq('log_date',today).maybeSingle();
+ if(e2){console.error(e2);}
+ if(log?.snapshot){d={...d,...log.snapshot};}
+ else {d.tasks=d.tasks.map(x=>({...x,done:false}));d.supp=d.supp.map(x=>({...x,done:false}));d.foodLog=[];d.water=0;d.steps=0;}
+ localStorage.setItem(KEY,JSON.stringify(d));
+ document.getElementById('authScreen').style.display='none';render();loadCalendar();
+}
+async function initCloud(){
+ if(!cloudReady){document.getElementById('authScreen').style.display='flex';setAuthMessage('Cloud sync is not configured yet.');return}
+ const {data:{session}}=await cloud.auth.getSession();
+ if(session){currentUser=session.user;await cloudLoad()}else document.getElementById('authScreen').style.display='flex';
+ cloud.auth.onAuthStateChange(async (_event,session)=>{currentUser=session?.user||null;if(currentUser)await cloudLoad();else document.getElementById('authScreen').style.display='flex'});
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(d));render();if(currentUser)cloudSave();}
+function calculateScore(){
+ const taskPct=d.tasks.length?d.tasks.filter(x=>x.done).length/d.tasks.length:0;
+ const suppPct=d.supp.length?d.supp.filter(x=>x.done).length/d.supp.length:1;
+ const T=totals(); const macroParts=[d.goals.cal?Math.min(1,T.cal/d.goals.cal):0,d.goals.p?Math.min(1,T.p/d.goals.p):0,d.goals.c?Math.min(1,T.c/d.goals.c):0,d.goals.f?Math.min(1,T.f/d.goals.f):0].reduce((a,b)=>a+b,0)/4;
+ const waterPct=d.waterTarget?Math.min(1,d.water/d.waterTarget):0,stepsPct=d.stepTarget?Math.min(1,d.steps/d.stepTarget):0;
+ return Math.round((taskPct*.5+macroParts*.3+suppPct*.1+((waterPct+stepsPct)/2)*.1)*100);
+}
+function scoreColor(score){return score>=70?'green':score>=40?'yellow':'red'}
+function changeMonth(n){calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+n,1);loadCalendar()}
+async function loadCalendar(){
+ if(!cloud||!currentUser)return;const y=calendarMonth.getFullYear(),m=calendarMonth.getMonth();const start=new Date(y,m,1).toISOString().slice(0,10),end=new Date(y,m+1,0).toISOString().slice(0,10);
+ const {data:logs}=await cloud.from('daily_logs').select('log_date,score,snapshot').eq('user_id',currentUser.id).gte('log_date',start).lte('log_date',end);const map=Object.fromEntries((logs||[]).map(x=>[x.log_date,x]));
+ const first=new Date(y,m,1).getDay();const days=new Date(y,m+1,0).getDate();let out=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class=calhead>${x}</div>`).join('');for(let i=0;i<first;i++)out+='<div class="calday empty"></div>';for(let dayNum=1;dayNum<=days;dayNum++){let ds=`${y}-${String(m+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`,item=map[ds],cls=item?scoreColor(item.score):'';out+=`<div class="calday ${cls}" onclick="openHistory('${ds}')"><div class=num>${dayNum}</div>${item?`<span class=dot title="${item.score}%"></span><div class=tiny>${item.score}%</div>`:''}</div>`}document.getElementById('calendar').innerHTML=out;document.getElementById('monthLabel').textContent=new Date(y,m,1).toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+}
+async function openHistory(ds){
+ if(!cloud||!currentUser)return;selectedHistoryDate=ds;const {data:log}=await cloud.from('daily_logs').select('snapshot,score').eq('user_id',currentUser.id).eq('log_date',ds).maybeSingle();const box=document.getElementById('historyBox');if(!log){box.innerHTML=`<b>${ds}</b><div class=muted>No saved data for this date.</div>`;return}
+ const s=log.snapshot||{},tasks=s.tasks||[],supp=s.supp||[],food=s.foodLog||[];const missed=tasks.filter(x=>!x.done).map(x=>`<div>☐ ${esc(x.time)} — ${esc(x.text)}</div>`).join('')||'<div>All scheduled tasks completed.</div>';const taken=supp.filter(x=>x.done).map(x=>`<div>☑ ${esc(x.name)} — ${esc(x.target)}</div>`).join('')||'<div>No supplements marked taken.</div>';
+ box.innerHTML=`<div class=split><h3 style="margin:0">${ds} — ${log.score}%</h3><span class=badge>${scoreColor(log.score).toUpperCase()}</span></div><div class=historygrid style="margin-top:10px"><div class=historyitem><b>Water</b><span>${s.water||0} L</span></div><div class=historyitem><b>Steps</b><span>${(s.steps||0).toLocaleString()}</span></div><div class=historyitem><b>Tasks missed</b><span>${tasks.filter(x=>!x.done).length}</span></div><div class=historyitem><b>Food entries</b><span>${food.length}</span></div></div><div style="margin-top:12px"><b>What was missed</b><div class=tiny style="line-height:1.8;margin-top:6px">${missed}</div></div><div style="margin-top:12px"><b>Supplements taken</b><div class=tiny style="line-height:1.8;margin-top:6px">${taken}</div></div>`;
+}
+/* replace the original initial render with cloud initialization */
+render();initCloud();
 </script></body></html>
