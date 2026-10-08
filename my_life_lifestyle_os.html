@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Life OS</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f2ed;color:#171717;font-family:Arial,sans-serif}.app{max-width:1180px;margin:auto;padding:25px}
+header{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}.eyebrow{font-size:10px;letter-spacing:3px;color:#777}.title{font-size:54px;font-weight:800;letter-spacing:-.07em}.date{font-size:12px;color:#777}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}nav button,.btn{border:1px solid #d8d3ca;background:#fffdf8;border-radius:9px;padding:10px 13px;cursor:pointer}nav button.active,.btn.dark{background:#171717;color:white}
+.view{display:none}.view.active{display:block}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.card,.panel{background:#fffdf8;border:1px solid #ded9cf;border-radius:14px;padding:18px}.panel{margin-top:12px}.kicker{font-size:10px;letter-spacing:1.5px;color:#777;text-transform:uppercase}.big{font-size:29px;font-weight:800;margin:7px 0}.muted,.tiny{font-size:11px;color:#777}
+.bar{height:7px;background:#e6e2da;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:#171717;width:0}
+.row{display:grid;grid-template-columns:28px 80px 1fr 28px;gap:5px;align-items:center;padding:11px 0;border-bottom:1px solid #e4dfd6}.row:last-child{border:0}.row input{width:18px;height:18px;accent-color:#171717}.row.done{opacity:.4}.row.done .main{text-decoration:line-through}.time{font-size:12px;font-weight:bold}.main{font-size:14px}.icon{border:0;background:transparent;color:#888;font-size:17px;cursor:pointer}
+.form{display:grid;grid-template-columns:110px 1fr auto;gap:7px;margin-top:12px}.form input,.form select,.field input{border:1px solid #d8d3ca;background:white;border-radius:8px;padding:10px;width:100%;outline:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.notice{padding:10px;background:#ece8df;border-radius:9px;font-size:11px;color:#625e57;line-height:1.5;margin-bottom:12px}.split{display:flex;justify-content:space-between;gap:10px;align-items:center}.panel h2{font-size:21px;letter-spacing:-.04em;margin:0 0 14px}
+.nutrient{border:1px solid #e1ddd4;border-radius:9px;padding:11px;background:white}.nutrient b{display:block;font-size:18px;margin:4px 0}
+.nutrow{display:grid;grid-template-columns:115px 1fr 100px;gap:8px;align-items:center;margin:9px 0;font-size:11px}.foodrow{display:grid;grid-template-columns:1fr 90px 90px 28px;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid #e3ded5;font-size:12px}
+.suggestions{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}.suggestions button{border:1px solid #d8d3ca;background:#fffdf8;border-radius:20px;padding:7px 9px;font-size:11px}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{display:block;font-size:10px;color:#777;text-transform:uppercase;margin-bottom:5px}
+table{width:100%;border-collapse:collapse;font-size:11px}th,td{text-align:left;border-bottom:1px solid #e2ddd4;padding:8px}td input{width:70px;border:1px solid #ddd;padding:5px}
+.goal{display:grid;grid-template-columns:1fr 100px 55px;gap:7px;align-items:center;padding:7px 0}.goal input{border:1px solid #ddd;padding:8px;width:100%}
+footer{margin-top:25px;font-size:10px;color:#777}
+@media(max-width:850px){.cards{grid-template-columns:1fr 1fr}.grid2,.grid3,.settings{grid-template-columns:1fr}}@media(max-width:550px){.cards{grid-template-columns:1fr}.title{font-size:42px}.form{grid-template-columns:1fr}.nutrow{grid-template-columns:90px 1fr 85px}}
+</style>
+</head>
+<body><div class="app">
+<header><div><div class="eyebrow">PERSONAL LIFESTYLE OS</div><div class="title" id="title">My Life.</div></div><div class="date" id="date"></div></header>
+<nav id="nav"></nav>
+
+<section id="dashboard" class="view active">
+<div class="cards">
+<div class="card"><span class="kicker">Daily progress</span><div class="big" id="progress">0%</div><div class="bar"><i id="progressBar"></i></div></div>
+<div class="card"><span class="kicker">Calories</span><div class="big" id="calories">0</div><span class="muted" id="calGoal"></span></div>
+<div class="card"><span class="kicker">Protein</span><div class="big" id="protein">0 g</div><span class="muted" id="proteinGoal"></span></div>
+<div class="card"><span class="kicker">Streak</span><div class="big" id="streak">0 🔥</div><span class="muted">completed days</span></div>
+</div>
+<div class="grid2">
+<div class="panel"><h2>Today</h2><div id="dashTasks"></div></div>
+<div class="panel"><h2>Micronutrients</h2><div id="dashMicro"></div></div>
+</div>
+<div class="grid2">
+<div class="panel"><h2>Water & steps</h2><div id="habits"></div></div>
+<div class="panel"><h2>Training</h2><div id="training"></div></div>
+</div>
+</section>
+
+<section id="schedule" class="view"><div class="panel"><div class="split"><h2>Daily schedule</h2><span class="muted">Everything is editable</span></div><div id="scheduleList"></div><div class="form"><input id="taskTime" type="time" value="07:15"><input id="taskText" placeholder="Objective"><button class="btn dark" onclick="addTask()">Add</button></div></div></section>
+
+<section id="nutrition" class="view">
+<div class="panel"><h2>Nutrition AI</h2>
+<div class="notice">Enter food naturally. Example: <b>2 eggs</b>, <b>100 g oats</b>, <b>250 ml milk</b>, <b>2 scoops whey</b>. The built-in parser calculates calories, protein, carbs, fat, fibre and configured micronutrients. It is local, not a cloud AI, and exact packaged-food labels should replace baseline values.</div>
+<div class="suggestions" id="suggestions"></div>
+<div class="form"><input id="foodQty" value="2"><input id="foodName" placeholder="Food e.g. eggs, oats, milk"><button class="btn dark" onclick="logFood()">Log</button></div>
+<div id="foodLog"></div></div>
+<div class="grid2"><div class="panel"><h2>Macros</h2><div class="grid3" id="macros"></div></div><div class="panel"><h2>Micros</h2><div id="micro"></div></div></div>
+<div class="panel"><h2>Editable food database</h2><div class="notice">Change these values to match your actual brands/labels. You can also add foods.</div><div style="overflow:auto"><table><thead><tr><th>Food</th><th>Basis</th><th>kcal</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Fibre</th></tr></thead><tbody id="foodDB"></tbody></table></div><button class="btn" onclick="addFood()">+ Add food</button></div>
+</section>
+
+<section id="supplements" class="view"><div class="panel"><div class="split"><h2>Supplements</h2><span class="muted">Check it when taken</span></div><div id="supplements"></div><button class="btn" onclick="addSupplement()">+ Add supplement</button></div><div class="panel"><h2>Micronutrients from supplements</h2><div id="suppMicro"></div></div></section>
+
+<section id="goals" class="view"><div class="panel"><h2>Macro & habit targets</h2><div id="goalFields"></div></div><div class="panel"><h2>Micronutrient targets</h2><div id="microGoals"></div></div></section>
+
+<section id="settings" class="view"><div class="panel"><h2>Edit everything</h2><div class="settings">
+<div class="field"><label>Dashboard name</label><input id="sName"></div><div class="field"><label>Water target (L)</label><input id="sWater" type="number" step=".1"></div><div class="field"><label>Step target</label><input id="sSteps" type="number"></div><div class="field"><label>Calories target</label><input id="sCal" type="number"></div>
+</div><button class="btn dark" style="margin-top:12px" onclick="saveSettings()">Save</button></div>
+<div class="panel"><h2>Backup</h2><button class="btn" onclick="exportData()">Export</button><button class="btn" onclick="document.getElementById('import').click()">Import</button><input id="import" type="file" accept=".json" hidden onchange="importData(event)"></div>
+<div class="panel"><h2>Reset</h2><button class="btn" onclick="resetAll()">Reset to baseline</button></div></section>
+
+<footer>Local browser storage. No account or server is required for this version.</footer>
+</div>
+
+<script>
+const KEY="MY_LIFE_OS_FINAL";
+const MICRO=["Calcium","Iron","Magnesium","Potassium","Sodium","Zinc","Vitamin A","Vitamin C","Vitamin D","Vitamin E","Vitamin K","Vitamin B1","Vitamin B2","Vitamin B3","Vitamin B6","Vitamin B12","Folate"];
+const microDefaults={Calcium:[1000,"mg"],Iron:[8,"mg"],Magnesium:[400,"mg"],Potassium:[3500,"mg"],Sodium:[2300,"mg"],Zinc:[11,"mg"],"Vitamin A":[900,"µg"],"Vitamin C":[90,"mg"],"Vitamin D":[15,"µg"],"Vitamin E":[15,"mg"],"Vitamin K":[120,"µg"],"Vitamin B1":[1.2,"mg"],"Vitamin B2":[1.3,"mg"],"Vitamin B3":[16,"mg"],"Vitamin B6":[1.3,"mg"],"Vitamin B12":[2.4,"µg"],Folate:[400,"µg"]};
+const foods=[
+["Egg","piece",72,6.3,.4,4.8,0],["Oats","100g",389,16.9,66.3,6.9,10.6],["Milk","250ml",150,7.8,12,8,0],["Cooked rice","100g",130,2.7,28.2,.3,.4],["Curd","100g",61,3.5,4.7,3.3,0],["Whey protein","scoop",120,24,3,2,0],["Banana","piece",105,1.3,27,.4,3.1]
+];
+function defaultState(){let mg={};for(let k of MICRO)mg[k]={goal:microDefaults[k][0],unit:microDefaults[k][1]};
+return {name:"My Life.",waterTarget:3,stepTarget:10000,goals:{cal:2500,p:120,c:300,f:70,fibre:30,micro:mg},tasks:[
+["07:15","Drink 500 ml water"],["08:00","Take creatine + supplements"],["08:15","Breakfast"],["09:00","Start classes / study"],["11:00","Drink water"],["13:00","Lunch"],["15:30","Drink water"],["17:00","Gym / workout"],["19:00","Protein / evening meal"],["20:30","Dinner"],["22:00","Skincare + prepare for tomorrow"],["23:00","Phone away / wind down"],["23:30","Sleep"]].map((x,i)=>({id:i,time:x[0],text:x[1],done:false})),foodLog:[],foods:foods.map((x,i)=>({id:i,name:x[0],basis:x[1],cal:x[2],p:x[3],c:x[4],f:x[5],fibre:x[6],micro:{}})),
+supp:[{name:"Creatine",target:"5 g",done:false,micro:{}},{name:"Magnesium",target:"200 mg",done:false,micro:{Magnesium:200}},{name:"Fish oil",target:"1 serving",done:false,micro:{}},{name:"Multivitamin",target:"1 serving",done:false,micro:{}}],
+water:0,steps:0,history:[]}}
+let d=JSON.parse(localStorage.getItem(KEY)||"null")||defaultState();
+function save(){localStorage.setItem(KEY,JSON.stringify(d));render()}
+function day(){return new Date().toISOString().slice(0,10)} function fmt(t){let [h,m]=t.split(":");h=+h;return `${h%12||12}:${m} ${h>=12?"PM":"AM"}`}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function nav(){let items=[["dashboard","Dashboard"],["schedule","Schedule"],["nutrition","Nutrition AI"],["supplements","Supplements"],["goals","Goals"],["settings","Edit everything"]];document.getElementById("nav").innerHTML=items.map(x=>`<button onclick="show('${x[0]}')">${x[1]}</button>`).join("")}
+function show(id){document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x.textContent.toLowerCase().includes(id==="settings"?"edit":id)));render()}
+function taskHTML(arr){return arr.sort((a,b)=>a.time.localeCompare(b.time)).map(t=>`<div class="row ${t.done?"done":""}"><input type="checkbox" ${t.done?"checked":""} onchange="toggleTask(${t.id})"><div class="time">${fmt(t.time)}</div><div class="main">${esc(t.text)}</div><button class="icon" onclick="delTask(${t.id})">×</button></div>`).join("")}
+function addTask(){if(!taskText.value.trim())return;d.tasks.push({id:Date.now(),time:taskTime.value,text:taskText.value.trim(),done:false});taskText.value="";save()}
+function toggleTask(id){let x=d.tasks.find(x=>x.id===id);x.done=!x.done;save()}function delTask(id){d.tasks=d.tasks.filter(x=>x.id!==id);save()}
+function totals(){let T={cal:0,p:0,c:0,f:0,fibre:0,mi:{}};MICRO.forEach(k=>T.mi[k]=0);
+d.foodLog.filter(x=>x.date===day()).forEach(x=>{let f=d.foods.find(y=>y.id===x.foodId);if(!f)return;["cal","p","c","f","fibre"].forEach(k=>T[k]+=f[k]*x.factor);MICRO.forEach(k=>T.mi[k]+=(f.micro[k]||0)*x.factor)});
+d.supp.forEach(s=>{if(s.done)for(let [k,v] of Object.entries(s.micro||{}))T.mi[k]+=v});return T}
+function factor(f,q){if(f.basis==="piece"||f.basis==="scoop")return q;if(f.basis==="250ml")return q/250;if(f.basis==="100g")return q/100;return q}
+function findFood(n){n=n.toLowerCase();return d.foods.find(f=>n.includes(f.name.toLowerCase())||f.name.toLowerCase().includes(n))}
+function logFood(){let f=findFood(foodName.value);if(!f){alert("Food not found. Add it in the editable database.");return}let q=+foodQty.value||1;let raw=foodName.value.toLowerCase();if(raw.includes("scoop"))f.basis="scoop";if(raw.includes("egg"))f.basis="piece";let fac=factor(f,q);d.foodLog.push({id:Date.now(),foodId:f.id,factor:fac,qty:q,date:day()});foodName.value="";save()}
+function deleteFood(id){d.foodLog=d.foodLog.filter(x=>x.id!==id);save()}
+function renderNutrition(){let T=totals();document.getElementById("foodLog").innerHTML=d.foodLog.filter(x=>x.date===day()).map(x=>{let f=d.foods.find(y=>y.id===x.foodId);return `<div class="foodrow"><b>${esc(f.name)}</b><span>${x.qty} ${f.basis}</span><span>${Math.round(f.cal*x.factor)} kcal · ${Math.round(f.p*x.factor)}g P</span><button class="icon" onclick="deleteFood(${x.id})">×</button></div>`}).join("")||"<div class='muted'>Nothing logged today.</div>";
+document.getElementById("macros").innerHTML=[["Calories",T.cal,"kcal",d.goals.cal],["Protein",T.p,"g",d.goals.p],["Carbs",T.c,"g",d.goals.c],["Fat",T.f,"g",d.goals.f],["Fibre",T.fibre,"g",d.goals.fibre]].map(x=>`<div class="nutrient"><span class="kicker">${x[0]}</span><b>${x[1].toFixed(1)} ${x[2]}</b><div class="bar"><i style="width:${Math.min(100,x[1]/x[3]*100)}%"></i></div><span class="tiny">goal ${x[3]}</span></div>`).join("");
+document.getElementById("micro").innerHTML=microHTML(T);document.getElementById("suppMicro").innerHTML=microHTML(T);
+document.getElementById("foodDB").innerHTML=d.foods.map((f,i)=>`<tr><td><input value="${esc(f.name)}" onchange="editFood(${i},'name',this.value)"></td><td>${f.basis}</td><td><input type=number value="${f.cal}" onchange="editFood(${i},'cal',this.value)"></td><td><input type=number value="${f.p}" onchange="editFood(${i},'p',this.value)"></td><td><input type=number value="${f.c}" onchange="editFood(${i},'c',this.value)"></td><td><input type=number value="${f.f}" onchange="editFood(${i},'f',this.value)"></td><td><input type=number value="${f.fibre}" onchange="editFood(${i},'fibre',this.value)"></td></tr>`).join("")}
+function microHTML(T){return MICRO.map(k=>{let g=d.goals.micro[k],v=T.mi[k]||0;return `<div class="nutrow"><span>${k}</span><div class="bar"><i style="width:${Math.min(100,v/g.goal*100)}%"></i></div><span style="text-align:right">${v.toFixed(v<10?1:0)} / ${g.goal}${g.unit}</span></div>`}).join("")}
+function editFood(i,k,v){d.foods[i][k]=k==="name"?v:+v;localStorage.setItem(KEY,JSON.stringify(d));renderNutrition()}
+function addFood(){d.foods.push({id:Date.now(),name:"New food",basis:"100g",cal:0,p:0,c:0,f:0,fibre:0,micro:{}});save()}
+function addSupplement(){let n=prompt("Supplement name");if(!n)return;d.supp.push({name:n,target:"1 serving",done:false,micro:{}});save()}
+function toggleSupp(i){d.supp[i].done=!d.supp[i].done;save()}
+function editSupp(i){let s=d.supp[i],n=prompt("Name",s.name);if(n===null)return;s.name=n;let t=prompt("Daily target",s.target);if(t!==null)s.target=t;let m=prompt("Micronutrients when taken: Magnesium=200, Zinc=10",Object.entries(s.micro).map(x=>x.join("=")).join(", "));if(m!==null){s.micro={};m.split(",").forEach(z=>{let [k,v]=z.split("=").map(x=>x.trim());if(MICRO.includes(k)&&v)s.micro[k]=+v})}save()}
+function renderSupp(){document.getElementById("supplements").innerHTML=d.supp.map((s,i)=>`<div class="row ${s.done?"done":""}"><input type=checkbox ${s.done?"checked":""} onchange="toggleSupp(${i})"><div class="time">TODAY</div><div class="main"><b>${esc(s.name)}</b><div class=tiny>${esc(s.target)} ${Object.entries(s.micro).map(x=>`· ${x[0]} +${x[1]}`).join(" ")}</div></div><button class=icon onclick="editSupp(${i})">✎</button></div>`).join("")}
+function renderGoals(){let g=document.getElementById("goalFields");g.innerHTML=[["Calories","cal","kcal"],["Protein","p","g"],["Carbohydrates","c","g"],["Fat","f","g"],["Fibre","fibre","g"]].map(x=>`<div class=goal><b>${x[0]}</b><input type=number value="${d.goals[x[1]]}" onchange="d.goals['${x[1]}']=+this.value||0;save()"><span>${x[2]}</span></div>`).join("");document.getElementById("microGoals").innerHTML=MICRO.map(k=>`<div class=goal><b>${k}</b><input type=number value="${d.goals.micro[k].goal}" onchange="d.goals.micro['${k}'].goal=+this.value||0;save()"><span>${d.goals.micro[k].unit}</span></div>`).join("")}
+function renderDashboard(){let T=totals(),all=d.tasks.length+d.supp.length,done=d.tasks.filter(x=>x.done).length+d.supp.filter(x=>x.done).length,p=all?Math.round(done/all*100):0;progress.textContent=p+"%";progressBar.style.width=p+"%";calories.textContent=Math.round(T.cal);calGoal.textContent="goal "+d.goals.cal+" kcal";protein.textContent=Math.round(T.p)+" g";proteinGoal.textContent="goal "+d.goals.p+" g";streak.textContent=d.history.length+" 🔥";dashTasks.innerHTML=taskHTML([...d.tasks]);dashMicro.innerHTML=microHTML(T);habits.innerHTML=`<div class=nutrow><span>Water</span><div class=bar><i style="width:${Math.min(100,d.water/d.waterTarget*100)}%"></i></div><span>${d.water}/${d.waterTarget} L</span></div><div class=nutrow><span>Steps</span><div class=bar><i style="width:${Math.min(100,d.steps/d.stepTarget*100)}%"></i></div><span>${d.steps.toLocaleString()}</span></div>`;training.innerHTML=d.tasks.filter(x=>x.done).filter(x=>/gym|run|swim|plyo/i.test(x.text)).map(x=>"☑ "+esc(x.text)).join("<br>")||"No training marked complete."}
+function renderSettings(){title.textContent=d.name;sName.value=d.name;sWater.value=d.waterTarget;sSteps.value=d.stepTarget;sCal.value=d.goals.cal}
+function saveSettings(){d.name=sName.value||"My Life.";d.waterTarget=+sWater.value||3;d.stepTarget=+sSteps.value||10000;d.goals.cal=+sCal.value||2500;save()}
+function exportData(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));a.download="my-life-backup.json";a.click()}
+function importData(e){let r=new FileReader();r.onload=()=>{try{d=JSON.parse(r.result);save()}catch{alert("Invalid backup file.")}};r.readAsText(e.target.files[0])}
+function resetAll(){if(confirm("Reset everything to baseline?")){localStorage.removeItem(KEY);location.reload()}}
+function render(){document.getElementById("date").textContent=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});nav();document.getElementById("scheduleList").innerHTML=taskHTML([...d.tasks]);renderDashboard();renderNutrition();renderSupp();renderGoals();renderSettings();suggestions.innerHTML=["2 eggs","100 g oats","250 ml milk","2 scoops whey","1 banana"].map(x=>`<button onclick="foodName.value='${x.replace(/[0-9 ]/g,'').trim()}'">${x}</button>`).join("")}
+render();
+</script></body></html>
